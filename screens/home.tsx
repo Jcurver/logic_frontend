@@ -11,7 +11,7 @@ export const HomeScreen: FC<StackScreenProps<NavigatorParamList, 'home'>> = ({
 		<View style={S.screen}>
 			<Text>asdfsadfasdf</Text>
 			<TouchableOpacity onPress={() => navigate('uploadImage')}>
-				<Text>hi</Text>
+				<Text>hiasdf</Text>
 			</TouchableOpacity>
 		</View>
 	);
