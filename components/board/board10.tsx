@@ -11,128 +11,179 @@ import {
 } from 'react-native';
 import { useHeaderHeight } from '@react-navigation/elements';
 
-type Imode = 'black' | 'x';
+type TouchMode = 'black' | 'x' | 'removeBlack' | 'removeX';
+type ButtonState = 'newBlack' | 'oldBlack' | 'newX' | 'oldX' | 'white';
+type swipeDirection = 'xAxis' | 'yAxis';
 
 export const Board10 = ({ ...props }) => {
 	const windowWidth = Dimensions.get('window').width;
 	const touchableBoardWidth = (windowWidth * 3) / 4;
 	const headerHeight = useHeaderHeight();
-	const firstY = windowWidth / 4 + headerHeight;
-	const firstX = windowWidth / 4;
+	const boardStartYpx = windowWidth / 4 + headerHeight;
+	const boardStartXpx = windowWidth / 4;
 	const position = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
-	const [clickMode, setClickMode] = useState<Imode>('black');
 	const [panResponderStart, setPanResponderStart] = useState({
 		x0: 0,
 		y0: 0,
 	});
-	const [boardTargetedAxis, setBoardTargetedAxis] = useState({
-		boardX: 0,
-		boardY: 0,
-	});
+	const [panResponderMove, setPanResponderMove] = useState({ dx: 0, dy: 0 });
+	// const [boardTargetedAxis, setBoardTargetedAxis] = useState({
+	// 	boardX: 0,
+	// 	boardY: 0,
+	// });
+
 	let BoardTargetedX = 0;
+	let BoardTargetedY = 0;
+
 	let go = [''];
-	let BoardTargetedY = -1;
 
-	const arr = new Array(10).fill(0).map(() => new Array(10).fill(0));
+	const arr = new Array(10)
+		.fill('white')
+		.map(() => new Array(10).fill('white'));
+
 	const [boardArr, setBoardArr] = useState(arr);
-	const [boardChangingArr, setBoardChangingArr] = useState(arr);
-	// const [go, setGo] = useState('');
+	const [touchMode, setTouchMode] = useState<TouchMode>('black');
 
-	const boardTouch = useMemo(
-		() => (touchX: number, touchY: number, mode: Imode) => {
-			if (mode === 'black') {
-				setBoardArr((boardArr) => {
-					boardArr[touchY].splice(
-						touchX,
-						1,
-						boardArr[touchY][touchX] === 0 ? 1 : 0
-					);
-					return [...boardArr];
-				});
-			}
-		},
-		[boardTargetedAxis]
-	);
-	const maxNum = useRef(true);
+	const TouchCase = (touchState: ButtonState, mode: TouchMode) => {
+		console.log('modeEEE:: ', mode);
+		switch (mode) {
+			case 'black':
+				if (touchState === 'white') return 'newBlack';
+				if (touchState === 'oldBlack') return 'oldBlack';
+				if (touchState === 'newBlack') return 'white';
+			case 'removeBlack':
+				if (touchState === 'white') return 'white';
+				if (touchState === 'oldBlack') return 'white';
+		}
+	};
+
+	const boardTouch = (touchX: number, touchY: number, mode: TouchMode) => {
+		if (touchY < 0 || touchY > 9) return;
+		setBoardArr((boardArr) => {
+			boardArr[touchY].splice(
+				touchX,
+				1,
+				TouchCase(boardArr[touchY][touchX], touchMode)
+			);
+			return [...boardArr];
+		});
+	};
+
 	const panResponder: PanResponderInstance = useMemo(
 		() =>
 			PanResponder.create({
 				onStartShouldSetPanResponder: () => true,
 				onPanResponderMove: (_, { dx, dy }) => {
-					position.setValue({ x: dx, y: dy });
-					let newBoardX = Math.floor(
-						(panResponderStart.x0 + dx - firstX) / (touchableBoardWidth / 10)
+					// position.setValue({ x: dx, y: dy });
+					const touchStartX = Math.floor(
+						(panResponderStart.x0 - boardStartXpx) / (touchableBoardWidth / 10)
 					);
-					// console.log('BoardTargetedX:: ', BoardTargetedX);
-
-					// const touchY = Math.floor(
-					// 	(panResponderStart.y0 - firstY) / (touchableBoardWidth / 10)
-					// );
-					const touchX = Math.floor(
-						(panResponderStart.x0 - firstX) / (touchableBoardWidth / 10)
+					const touchFinalX = Math.floor(
+						(panResponderStart.x0 + dx - boardStartXpx) /
+							(touchableBoardWidth / 10)
 					);
-					const touchX2 = Math.floor(
-						(panResponderStart.x0 - firstX) / (touchableBoardWidth / 10)
+					const touchStartY = Math.floor(
+						(panResponderStart.y0 - boardStartYpx) / (touchableBoardWidth / 10)
 					);
+					const touchFinalY = Math.floor(
+						(panResponderStart.y0 + dy - boardStartYpx) /
+							(touchableBoardWidth / 10)
+					);
+					console.log('touchFinalX:: ', touchFinalX);
 
 					if (
-						panResponderStart.y0 >= firstY &&
-						panResponderStart.y0 <= firstY + touchableBoardWidth &&
-						panResponderStart.x0 >= firstX &&
-						newBoardX !== BoardTargetedX
-						// newBoardX !== touchX
+						touchFinalX >= 0 &&
+						touchFinalX < 10 &&
+						touchFinalY >= 0 &&
+						touchFinalY < 10 &&
+						panResponderStart.y0 >= boardStartYpx &&
+						panResponderStart.y0 <= boardStartYpx + touchableBoardWidth &&
+						panResponderStart.x0 >= boardStartXpx &&
+						(touchFinalX !== BoardTargetedX || touchFinalY !== BoardTargetedY)
 					) {
-						const oldgo = [...go];
-						console.log('oldgo:: ', oldgo);
-						if (newBoardX === touchX) {
-							boardTouch(touchX, boardTargetedAxis.boardY, 'black');
-							if (
-								oldgo[0] == 'left' &&
-								boardArr[boardTargetedAxis.boardY][touchX]
-							) {
-								boardTouch(touchX, boardTargetedAxis.boardY, 'black');
+						for (let x = 0; x < 10; x++) {
+							for (let y = 0; y < 10; y++) {
+								if (boardArr[y][x] === 'newBlack') {
+									boardArr[y].splice(x, 1, 'white');
+									setBoardArr([...boardArr]);
+								}
 							}
 						}
-						if (newBoardX > BoardTargetedX) {
-							if (go[0]='right')
-							go = ['right'];
-							boardTouch(newBoardX, boardTargetedAxis.boardY, 'black');
-						} else {
-							go = ['left'];
-							boardTouch(newBoardX + 1, boardTargetedAxis.boardY, 'black');
-						}
-						// else if (newBoardX < BoardTargetedX) {
-						// 	go = ['right'];
-						// 	boardTouch(newBoardX, boardTargetedAxis.boardY, 'black');
-						// } else {
-						// 	go = ['left'];
-						// 	boardTouch(newBoardX + 1, boardTargetedAxis.boardY, 'black');
-						// }
+						if (Math.abs(dx) > Math.abs(dy)) {
+							for (
+								let i = 0;
+								i < Math.abs(touchFinalX - touchStartX) + 1;
+								i++
+							) {
+								if (touchFinalX < touchStartX) {
+									console.log('touchMode:: ', touchMode);
+									boardTouch(touchStartX - i, touchStartY, touchMode);
+								} else {
+									console.log('touchMode:: ', touchMode);
 
-						BoardTargetedX = newBoardX;
-						console.log('render::DD ');
+									boardTouch(touchStartX + i, touchStartY, touchMode);
+								}
+								console.log('i:: ', i);
+							}
+						} else {
+							for (
+								let i = 0;
+								i < Math.abs(touchFinalY - touchStartY) + 1;
+								i++
+							) {
+								if (touchFinalY < touchStartY) {
+									boardTouch(touchStartX, touchStartY - i, touchMode);
+								} else {
+									boardTouch(touchStartX, touchStartY + i, touchMode);
+								}
+							}
+						}
+						BoardTargetedX = touchFinalX;
+						BoardTargetedY = touchFinalY;
 					}
 				},
 				onPanResponderStart: (_, { x0, y0 }) => {
 					if (
-						y0 >= firstY &&
-						y0 <= firstY + touchableBoardWidth &&
-						x0 >= firstX
+						y0 >= boardStartYpx &&
+						y0 <= boardStartYpx + touchableBoardWidth &&
+						x0 >= boardStartXpx
 					) {
 						const touchY = Math.floor(
-							(y0 - firstY) / (touchableBoardWidth / 10)
+							(y0 - boardStartYpx) / (touchableBoardWidth / 10)
 						);
 						const touchX = Math.floor(
-							(x0 - firstX) / (touchableBoardWidth / 10)
+							(x0 - boardStartXpx) / (touchableBoardWidth / 10)
 						);
-						boardTouch(touchX, touchY, 'black');
 						setPanResponderStart({ x0, y0 });
-						setBoardTargetedAxis({ boardX: touchX, boardY: touchY });
+						// setBoardTargetedAxis({ boardX: touchX, boardY: touchY });
+						boardTouch(touchX, touchY, touchMode);
 						BoardTargetedX = touchX;
+						if (
+							boardArr[touchY][touchX] === 'oldBlack' &&
+							touchMode === 'black'
+						) {
+							boardTouch(touchX, touchY, 'removeBlack');
+							setTouchMode('removeBlack');
+							boardArr[touchY].splice(touchX, 1, 'white');
+							setBoardArr([...boardArr]);
+						}
+					}
+				},
+				onPanResponderRelease: () => {
+					for (let x = 0; x < 10; x++) {
+						for (let y = 0; y < 10; y++) {
+							if (boardArr[y][x] === 'newBlack') {
+								boardArr[y].splice(x, 1, 'oldBlack');
+								setBoardArr([...boardArr]);
+							}
+						}
+					}
+					if (touchMode === 'removeBlack') {
+						setTouchMode('black');
 					}
 				},
 			}),
-		[panResponderStart]
+		[panResponderStart, touchMode]
 	);
 	// const pressHandler = (e) => {
 	// 	console.log(e.nativeEvent.pageX);
@@ -141,7 +192,7 @@ export const Board10 = ({ ...props }) => {
 	// };
 	useEffect(() => {
 		console.log('rendering');
-	}, [boardTouch, setBoardArr, boardTargetedAxis, setBoardTargetedAxis]);
+	}, [boardTouch, setBoardArr]);
 	return (
 		<View
 			{...panResponder.panHandlers}
@@ -166,7 +217,11 @@ export const Board10 = ({ ...props }) => {
 										flex: 10,
 										borderWidth: 0.4,
 										backgroundColor: `${
-											boardArr[x][y] === 1 ? 'black' : 'white'
+											boardArr[x][y] === 'oldBlack'
+												? 'gray'
+												: boardArr[x][y] === 'newBlack'
+												? 'black'
+												: 'white'
 										}`,
 									}}
 								></View>
