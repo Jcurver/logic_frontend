@@ -1,10 +1,7 @@
-type TouchState = 'newBlack' | 'oldBlack' | 'newX' | 'oldX' | 'white';
+export type TouchState = 'newBlack' | 'oldBlack' | 'newX' | 'oldX' | 'white';
 export type TouchMode = 'black' | 'x' | 'removeBlack' | 'removeX';
 
-export const TouchCase = (
-	touchState: TouchState,
-	mode: TouchMode
-): string | void => {
+export const TouchCase = (touchState: TouchState, mode: TouchMode) => {
 	switch (mode) {
 		case 'black':
 			if (touchState === 'white') return 'newBlack';

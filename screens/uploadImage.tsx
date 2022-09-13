@@ -31,7 +31,7 @@ export const UploadImageScreen: FC<
 		<View style={S.screen}>
 			<TouchableOpacity onPress={() => open()}>
 			</TouchableOpacity>
-				<Board line={20} />
+				<Board line={10} />
 		</View>
 	);
 };

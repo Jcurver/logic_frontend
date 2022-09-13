@@ -33,9 +33,9 @@ const TouchableArea = ({ boardArr, line }: ITouchableArea) => {
 							}}
 						>
 							{boardArr[x][y] === 'oldX' ? (
-								<Icon name="close" size={12} color="red" />
+								<Icon name="close" size={12} color="gray" />
 							) : boardArr[x][y] === 'newX' ? (
-								<Icon name="close" size={12} />
+								<Icon name="close" size={12} color="red" />
 							) : null}
 						</View>
 					))}

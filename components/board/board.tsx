@@ -10,13 +10,16 @@ import {
 	PanResponderInstance,
 	Button,
 } from 'react-native';
-import { useHeaderHeight } from '@react-navigation/elements';
+import { Background, useHeaderHeight } from '@react-navigation/elements';
 import Icon from 'react-native-vector-icons/Ionicons';
 import TouchableArea from './TouchableArea';
-import { TouchCase, TouchMode } from './TouchCase';
+import { TouchCase, TouchMode, TouchState } from './TouchCase';
+import { MOCK_BOARD } from './mockBoard';
+import { ClearModal } from './ClearModal';
 
+type Line = 10 | 15 | 20;
 interface IBoard {
-	line: 10 | 15 | 20;
+	line: Line;
 }
 
 export const Board = ({ line }: IBoard) => {
@@ -30,14 +33,25 @@ export const Board = ({ line }: IBoard) => {
 		x0: 0,
 		y0: 0,
 	});
+	const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
 
 	let BoardTargetedX = 0;
 	let BoardTargetedY = 0;
 
-	const arr = new Array(line)
+	const clearArr = new Array(line)
 		.fill('white')
 		.map(() => new Array(line).fill('white'));
-	const [boardArr, setBoardArr] = useState(arr);
+	const [boardArr, setBoardArr] = useState<TouchState[][]>(
+		MOCK_BOARD ? [...MOCK_BOARD] : clearArr
+	);
+	const BOARD = [...MOCK_BOARD];
+
+	const [boardArrStack, setBoardArrStack] = useState<TouchState[][][]>(
+		BOARD ? [[...BOARD]] : [clearArr]
+	);
+	console.log('BoardArrStack ', boardArrStack);
+
+	const [stackNum, setStackNum] = useState<number>(1);
 	const [touchMode, setTouchMode] = useState<TouchMode>('black');
 
 	const changeButton = (touchMode: TouchMode) => {
@@ -46,6 +60,19 @@ export const Board = ({ line }: IBoard) => {
 		} else {
 			setTouchMode('black');
 		}
+	};
+	const clearBoard = () => {
+		setBoardArr(clearArr);
+		// setBoardArrStack([clearArr]);
+		setStackNum(1);
+		setDeleteModalVisible(false);
+	};
+	const moveStack = (dStack: number) => {
+		if (stackNum + dStack < 0 || stackNum + dStack > boardArrStack.length) {
+			return;
+		}
+		setStackNum((num) => num + dStack);
+		// setBoardArr(boardArrStack[stackNum - 1]);
 	};
 
 	const boardTouch = (touchX: number, touchY: number, mode: TouchMode) => {
@@ -165,6 +192,9 @@ export const Board = ({ line }: IBoard) => {
 					} else {
 						setPanResponderStart({ x0: 0, y0: 0 });
 					}
+					// console.log('boardArrStack[0]:: ', boardArrStack[0]);
+					// console.log('boardArr:: ', boardArr);
+					// setBoardArrStack([...boardArrStack, [...boardArr]]);
 				},
 				onPanResponderRelease: () => {
 					for (let x = 0; x < line; x++) {
@@ -185,6 +215,18 @@ export const Board = ({ line }: IBoard) => {
 					if (touchMode === 'removeX') {
 						setTouchMode('x');
 					}
+					const forSaveBoard = [...boardArr];
+					for (let x = 0; x < line; x++) {
+						for (let y = 0; y < line; y++) {
+							if (forSaveBoard[y][x] === 'newBlack') {
+								forSaveBoard[y].splice(x, 1, 'white');
+							}
+						}
+					}
+					// save('boardStack', [...boardArrStack,boardArr]);
+					// setBoardArrStack([...bo])
+
+					setStackNum((num) => num + 1);
 				},
 			}),
 		[panResponderStart, touchMode]
@@ -194,6 +236,7 @@ export const Board = ({ line }: IBoard) => {
 		<View>
 			<View
 				{...panResponder.panHandlers}
+				// useNativeDriver={true}
 				style={[{ width: windowWidth, height: windowWidth }, S.board]}
 			>
 				<View style={{ flex: 1, flexDirection: 'row' }}>
@@ -221,40 +264,29 @@ export const Board = ({ line }: IBoard) => {
 						}
 					/>
 				</TouchableOpacity>
-				<TouchableOpacity onPress={() => changeButton(touchMode)}>
+				<TouchableOpacity onPress={() => moveStack(-1)}>
 					<Icon
 						name="return-up-back"
 						size={40}
-						color={
-							touchMode === 'removeBlack' || touchMode === 'removeX'
-								? 'red'
-								: 'gray'
-						}
+						color={boardArrStack.length === 1 ? 'gray' : 'black'}
 					/>
 				</TouchableOpacity>
-				<TouchableOpacity onPress={() => changeButton(touchMode)}>
-					<Icon
-						name="return-up-forward"
-						size={40}
-						color={
-							touchMode === 'removeBlack' || touchMode === 'removeX'
-								? 'red'
-								: 'gray'
-						}
-					/>
+				<TouchableOpacity onPress={() => moveStack(1)}>
+					<Icon name="return-up-forward" size={40} />
 				</TouchableOpacity>
 				<TouchableOpacity onPress={() => changeButton(touchMode)}>
-					<Icon
-						name="flag-outline"
-						size={40}
-						color={
-							touchMode === 'removeBlack' || touchMode === 'removeX'
-								? 'red'
-								: 'gray'
-						}
-					/>
+					<Icon name="flag-outline" size={40} />
+				</TouchableOpacity>
+				<TouchableOpacity onPress={() => setDeleteModalVisible(true)}>
+					<Icon name="trash-outline" size={40} />
 				</TouchableOpacity>
 			</View>
+
+			<ClearModal
+				isVisible={deleteModalVisible}
+				setDeleteModalVisible={setDeleteModalVisible}
+				clearBoard={() => clearBoard()}
+			/>
 		</View>
 	);
 };
@@ -269,5 +301,13 @@ const S = StyleSheet.create({
 		justifyContent: 'center',
 		alignItems: 'center',
 		flexDirection: 'row',
+	},
+	deleteModalButton: {
+		paddingHorizontal: 10,
+		paddingVertical: 10,
+		borderWidth: 1,
+		borderRadius: 10,
+		marginHorizontal: 5,
+		marginTop: 10,
 	},
 });
