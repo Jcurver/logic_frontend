@@ -10,12 +10,12 @@ import { StackScreenProps } from '@react-navigation/stack';
 import { NavigatorParamList } from '../navigators/navigator';
 import ImagePicker from 'react-native-image-crop-picker';
 import { useLinkProps } from '@react-navigation/native';
-import { Board10 } from '../components';
+import { Board } from '../components';
+
 
 export const UploadImageScreen: FC<
 	StackScreenProps<NavigatorParamList, 'uploadImage'>
-  > = () => {
-  
+> = () => {
 	const open = () => {
 		ImagePicker.openCamera({
 			width: 300,
@@ -30,8 +30,8 @@ export const UploadImageScreen: FC<
 	return (
 		<View style={S.screen}>
 			<TouchableOpacity onPress={() => open()}>
-				<Board10 />
 			</TouchableOpacity>
+				<Board line={20} />
 		</View>
 	);
 };

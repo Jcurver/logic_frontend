@@ -8,14 +8,18 @@ import {
 	PanResponder,
 	Animated,
 	PanResponderInstance,
+	Button,
 } from 'react-native';
 import { useHeaderHeight } from '@react-navigation/elements';
+import Icon from 'react-native-vector-icons/Ionicons';
+import TouchableArea from './TouchableArea';
+import { TouchCase, TouchMode } from './TouchCase';
 
-type TouchMode = 'black' | 'x' | 'removeBlack' | 'removeX';
-type ButtonState = 'newBlack' | 'oldBlack' | 'newX' | 'oldX' | 'white';
-type swipeDirection = 'xAxis' | 'yAxis';
+interface IBoard {
+	line: 10 | 15 | 20;
+}
 
-export const Board10 = ({ ...props }) => {
+export const Board = ({ line }: IBoard) => {
 	const windowWidth = Dimensions.get('window').width;
 	const touchableBoardWidth = (windowWidth * 3) / 4;
 	const headerHeight = useHeaderHeight();
@@ -26,44 +30,31 @@ export const Board10 = ({ ...props }) => {
 		x0: 0,
 		y0: 0,
 	});
-	const [panResponderMove, setPanResponderMove] = useState({ dx: 0, dy: 0 });
-	// const [boardTargetedAxis, setBoardTargetedAxis] = useState({
-	// 	boardX: 0,
-	// 	boardY: 0,
-	// });
 
 	let BoardTargetedX = 0;
 	let BoardTargetedY = 0;
 
-	let go = [''];
-
-	const arr = new Array(10)
+	const arr = new Array(line)
 		.fill('white')
-		.map(() => new Array(10).fill('white'));
-
+		.map(() => new Array(line).fill('white'));
 	const [boardArr, setBoardArr] = useState(arr);
 	const [touchMode, setTouchMode] = useState<TouchMode>('black');
 
-	const TouchCase = (touchState: ButtonState, mode: TouchMode) => {
-		console.log('modeEEE:: ', mode);
-		switch (mode) {
-			case 'black':
-				if (touchState === 'white') return 'newBlack';
-				if (touchState === 'oldBlack') return 'oldBlack';
-				if (touchState === 'newBlack') return 'white';
-			case 'removeBlack':
-				if (touchState === 'white') return 'white';
-				if (touchState === 'oldBlack') return 'white';
+	const changeButton = (touchMode: TouchMode) => {
+		if (touchMode === 'black' || touchMode === 'removeBlack') {
+			setTouchMode('x');
+		} else {
+			setTouchMode('black');
 		}
 	};
 
 	const boardTouch = (touchX: number, touchY: number, mode: TouchMode) => {
-		if (touchY < 0 || touchY > 9) return;
+		if (touchY < 0 || touchY > line - 1) return;
 		setBoardArr((boardArr) => {
 			boardArr[touchY].splice(
 				touchX,
 				1,
-				TouchCase(boardArr[touchY][touchX], touchMode)
+				TouchCase(boardArr[touchY][touchX], mode)
 			);
 			return [...boardArr];
 		});
@@ -74,36 +65,40 @@ export const Board10 = ({ ...props }) => {
 			PanResponder.create({
 				onStartShouldSetPanResponder: () => true,
 				onPanResponderMove: (_, { dx, dy }) => {
-					// position.setValue({ x: dx, y: dy });
 					const touchStartX = Math.floor(
-						(panResponderStart.x0 - boardStartXpx) / (touchableBoardWidth / 10)
+						(panResponderStart.x0 - boardStartXpx) /
+							(touchableBoardWidth / line)
 					);
 					const touchFinalX = Math.floor(
 						(panResponderStart.x0 + dx - boardStartXpx) /
-							(touchableBoardWidth / 10)
+							(touchableBoardWidth / line)
 					);
 					const touchStartY = Math.floor(
-						(panResponderStart.y0 - boardStartYpx) / (touchableBoardWidth / 10)
+						(panResponderStart.y0 - boardStartYpx) /
+							(touchableBoardWidth / line)
 					);
 					const touchFinalY = Math.floor(
 						(panResponderStart.y0 + dy - boardStartYpx) /
-							(touchableBoardWidth / 10)
+							(touchableBoardWidth / line)
 					);
-					console.log('touchFinalX:: ', touchFinalX);
 
 					if (
 						touchFinalX >= 0 &&
-						touchFinalX < 10 &&
+						touchFinalX < line &&
 						touchFinalY >= 0 &&
-						touchFinalY < 10 &&
+						touchFinalY < line &&
 						panResponderStart.y0 >= boardStartYpx &&
 						panResponderStart.y0 <= boardStartYpx + touchableBoardWidth &&
 						panResponderStart.x0 >= boardStartXpx &&
 						(touchFinalX !== BoardTargetedX || touchFinalY !== BoardTargetedY)
 					) {
-						for (let x = 0; x < 10; x++) {
-							for (let y = 0; y < 10; y++) {
+						for (let x = 0; x < line; x++) {
+							for (let y = 0; y < line; y++) {
 								if (boardArr[y][x] === 'newBlack') {
+									boardArr[y].splice(x, 1, 'white');
+									setBoardArr([...boardArr]);
+								}
+								if (boardArr[y][x] === 'newX') {
 									boardArr[y].splice(x, 1, 'white');
 									setBoardArr([...boardArr]);
 								}
@@ -116,14 +111,10 @@ export const Board10 = ({ ...props }) => {
 								i++
 							) {
 								if (touchFinalX < touchStartX) {
-									console.log('touchMode:: ', touchMode);
 									boardTouch(touchStartX - i, touchStartY, touchMode);
 								} else {
-									console.log('touchMode:: ', touchMode);
-
 									boardTouch(touchStartX + i, touchStartY, touchMode);
 								}
-								console.log('i:: ', i);
 							}
 						} else {
 							for (
@@ -149,31 +140,41 @@ export const Board10 = ({ ...props }) => {
 						x0 >= boardStartXpx
 					) {
 						const touchY = Math.floor(
-							(y0 - boardStartYpx) / (touchableBoardWidth / 10)
+							(y0 - boardStartYpx) / (touchableBoardWidth / line)
 						);
 						const touchX = Math.floor(
-							(x0 - boardStartXpx) / (touchableBoardWidth / 10)
+							(x0 - boardStartXpx) / (touchableBoardWidth / line)
 						);
 						setPanResponderStart({ x0, y0 });
-						// setBoardTargetedAxis({ boardX: touchX, boardY: touchY });
 						boardTouch(touchX, touchY, touchMode);
 						BoardTargetedX = touchX;
+
 						if (
 							boardArr[touchY][touchX] === 'oldBlack' &&
 							touchMode === 'black'
 						) {
 							boardTouch(touchX, touchY, 'removeBlack');
 							setTouchMode('removeBlack');
-							boardArr[touchY].splice(touchX, 1, 'white');
-							setBoardArr([...boardArr]);
+						} else if (
+							boardArr[touchY][touchX] === 'oldX' &&
+							touchMode === 'x'
+						) {
+							boardTouch(touchX, touchY, 'removeX');
+							setTouchMode('removeX');
 						}
+					} else {
+						setPanResponderStart({ x0: 0, y0: 0 });
 					}
 				},
 				onPanResponderRelease: () => {
-					for (let x = 0; x < 10; x++) {
-						for (let y = 0; y < 10; y++) {
+					for (let x = 0; x < line; x++) {
+						for (let y = 0; y < line; y++) {
 							if (boardArr[y][x] === 'newBlack') {
 								boardArr[y].splice(x, 1, 'oldBlack');
+								setBoardArr([...boardArr]);
+							}
+							if (boardArr[y][x] === 'newX') {
+								boardArr[y].splice(x, 1, 'oldX');
 								setBoardArr([...boardArr]);
 							}
 						}
@@ -181,54 +182,78 @@ export const Board10 = ({ ...props }) => {
 					if (touchMode === 'removeBlack') {
 						setTouchMode('black');
 					}
+					if (touchMode === 'removeX') {
+						setTouchMode('x');
+					}
 				},
 			}),
 		[panResponderStart, touchMode]
 	);
-	// const pressHandler = (e) => {
-	// 	console.log(e.nativeEvent.pageX);
-	// 	console.log(e.nativeEvent.pageY);
-	// 	// this.animation.play();
-	// };
-	useEffect(() => {
-		console.log('rendering');
-	}, [boardTouch, setBoardArr]);
+
 	return (
-		<View
-			{...panResponder.panHandlers}
-			style={[{ width: windowWidth, height: windowWidth }, S.board]}
-		>
-			<View style={{ flex: 1, flexDirection: 'row' }}>
-				<View style={{ flex: 1, backgroundColor: 'yellow' }}></View>
-				<View style={{ flex: 3, backgroundColor: 'green' }}></View>
-			</View>
-			<View style={{ flex: 3, flexDirection: 'row' }}>
-				<View style={{ flex: 1, backgroundColor: 'blue' }}></View>
-				<View style={{ flex: 3 }}>
-					{[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((x: number) => (
-						<View
-							key={x}
-							style={{ flex: 10, borderWidth: 0.4, flexDirection: 'row' }}
-						>
-							{[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((y: number) => (
-								<View
-									key={y}
-									style={{
-										flex: 10,
-										borderWidth: 0.4,
-										backgroundColor: `${
-											boardArr[x][y] === 'oldBlack'
-												? 'gray'
-												: boardArr[x][y] === 'newBlack'
-												? 'black'
-												: 'white'
-										}`,
-									}}
-								></View>
-							))}
-						</View>
-					))}
+		<View>
+			<View
+				{...panResponder.panHandlers}
+				style={[{ width: windowWidth, height: windowWidth }, S.board]}
+			>
+				<View style={{ flex: 1, flexDirection: 'row' }}>
+					<View style={{ flex: 1, backgroundColor: 'yellow' }}></View>
+					<View style={{ flex: 3, backgroundColor: 'green' }}></View>
 				</View>
+				<View style={{ flex: 3, flexDirection: 'row' }}>
+					<View style={{ flex: 1, backgroundColor: 'blue' }}></View>
+					<TouchableArea boardArr={boardArr} line={line} />
+				</View>
+			</View>
+			<View style={S.changeButton}>
+				<TouchableOpacity onPress={() => changeButton(touchMode)}>
+					<Icon
+						name={
+							touchMode === 'black' || touchMode === 'removeBlack'
+								? 'brush'
+								: 'close'
+						}
+						size={40}
+						color={
+							touchMode === 'removeBlack' || touchMode === 'removeX'
+								? 'red'
+								: 'gray'
+						}
+					/>
+				</TouchableOpacity>
+				<TouchableOpacity onPress={() => changeButton(touchMode)}>
+					<Icon
+						name="return-up-back"
+						size={40}
+						color={
+							touchMode === 'removeBlack' || touchMode === 'removeX'
+								? 'red'
+								: 'gray'
+						}
+					/>
+				</TouchableOpacity>
+				<TouchableOpacity onPress={() => changeButton(touchMode)}>
+					<Icon
+						name="return-up-forward"
+						size={40}
+						color={
+							touchMode === 'removeBlack' || touchMode === 'removeX'
+								? 'red'
+								: 'gray'
+						}
+					/>
+				</TouchableOpacity>
+				<TouchableOpacity onPress={() => changeButton(touchMode)}>
+					<Icon
+						name="flag-outline"
+						size={40}
+						color={
+							touchMode === 'removeBlack' || touchMode === 'removeX'
+								? 'red'
+								: 'gray'
+						}
+					/>
+				</TouchableOpacity>
 			</View>
 		</View>
 	);
@@ -239,4 +264,10 @@ const S = StyleSheet.create({
 		flex: 1,
 	},
 	board: { backgroundColor: 'orange' },
+	changeButton: {
+		// flex:1 ,
+		justifyContent: 'center',
+		alignItems: 'center',
+		flexDirection: 'row',
+	},
 });
