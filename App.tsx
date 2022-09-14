@@ -12,7 +12,9 @@ import { AppNavigator } from './navigators/navigator';
 export default function App() {
 	return (
 		<SafeAreaProvider initialMetrics={initialWindowMetrics}>
-			<AppNavigator />
+
+				<AppNavigator />
+
 		</SafeAreaProvider>
 	);
 }

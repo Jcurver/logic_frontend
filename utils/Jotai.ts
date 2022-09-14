@@ -8,3 +8,7 @@ export const LeftLineFinish = atom<boolean[]>(
 export const TopLineFinish = atom<boolean[]>(
 	Array.from({ length: 20 }, () => false)
 );
+// export const boardTouchXY = atom({
+// 	x: 0,
+// 	y: 0,
+// });

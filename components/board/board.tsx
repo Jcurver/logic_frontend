@@ -26,8 +26,11 @@ import { CustomModal } from '../CustomModal';
 import BoardNumbers from './boardNumbers';
 import { IBoard } from './interface';
 import { useAtom } from 'jotai';
-import { LeftLineFinish, TopLineFinish, TouchModeAtom } from '../../utils/Jotai';
-
+import {
+	LeftLineFinish,
+	TopLineFinish,
+	TouchModeAtom,
+} from '../../utils/Jotai';
 
 const MOCK_BOARD1 = MOCK_BOARD.map((v) => [...v]);
 const MOCK_BOARD2 = MOCK_BOARD.map((v) => [...v]);
@@ -59,12 +62,15 @@ export const Board = ({ line }: IBoard) => {
 	const [boardArr, setBoardArr] = useState<TouchState[][]>(
 		MOCK_BOARD1 ? MOCK_BOARD1 : clearArr
 	);
-	// console.log('boardArr:: ',boardArr)
 
 	const [boardArrStack, setBoardArrStack] = useState<TouchState[][][]>(
 		MOCK_BOARD2 ? [MOCK_BOARD2] : [clearArr]
 	);
-	const [touchMode,setTouchMode] = useAtom(TouchModeAtom)
+	const [touchMode, setTouchMode] = useAtom(TouchModeAtom);
+	const [leftLineFinishArr, setLeftLineFinishArr] = useAtom(LeftLineFinish);
+	const [topLineFinishArr, setTopLineFinishArr] = useAtom(TopLineFinish);
+
+
 
 	const changeButton = (touchMode: TouchMode) => {
 		if (touchMode === 'black' || touchMode === 'removeBlack') {
@@ -90,10 +96,7 @@ export const Board = ({ line }: IBoard) => {
 
 		// setBoardArr(boardArrStack[stackNum - 2]);
 	};
-		const [leftLineFinishArr, setLeftLineFinishArr] = useAtom(LeftLineFinish);
-	const [topLineFinishArr, setTopLineFinishArr] = useAtom(TopLineFinish);
-	console.log(':: ', leftLineFinishArr, topLineFinishArr);
-	
+
 	const savePoint = () => {
 		const boardArrCopy = boardArr.map((v) => [...v]);
 		const savePointArrCopy = savePointArr?.map((v) => [...v]);
@@ -166,7 +169,7 @@ export const Board = ({ line }: IBoard) => {
 								}
 							}
 						}
-						// console.log('sss:: ');
+
 						if (Math.abs(dx) > Math.abs(dy)) {
 							for (
 								let i = 0;
@@ -240,14 +243,27 @@ export const Board = ({ line }: IBoard) => {
 							for (let y = 0; y < line; y++) {
 								if (boardArr[y][x] === 'newBlack') {
 									boardArr[y].splice(x, 1, 'oldBlack');
-									setBoardArr([...boardArr]);
+									// setBoardArr(boardArr.map((v) => [...v]));
 								}
 								if (boardArr[y][x] === 'newX') {
 									boardArr[y].splice(x, 1, 'oldX');
-									setBoardArr([...boardArr]);
+									// setBoardArr(boardArr.map((v) => [...v]));
 								}
 							}
 						}
+						if (touchMode === 'black') {
+							for (let x = 0; x < line; x++) {
+								if (leftLineFinishArr[x]) {
+									for (let y = 0; y < line; y++) {
+										if (boardArr[x][y] === 'white') {
+											boardArr[x].splice(y, 1, 'oldX');
+											setBoardArr(boardArr.map((v) => [...v]));
+										}
+									}
+								}
+							}
+						}
+
 						if (touchMode === 'removeBlack') {
 							setTouchMode('black');
 						}
@@ -255,11 +271,11 @@ export const Board = ({ line }: IBoard) => {
 							setTouchMode('x');
 						}
 
-						const copy = boardArr.map((v) => [...v]);
-						const stackCopy = boardArrStack.map((v) => [
+						const boardArrCopy = boardArr.map((v) => [...v]);
+						const boardArrStackCopy = boardArrStack.map((v) => [
 							...v.map((i) => [...i]),
 						]);
-						setBoardArrStack([...stackCopy, copy]);
+						setBoardArrStack([...boardArrStackCopy, boardArrCopy]);
 					}
 				},
 			}),
@@ -275,7 +291,7 @@ export const Board = ({ line }: IBoard) => {
 				style={[{ width: windowWidth, height: windowWidth }, S.board]}
 			>
 				<View style={{ flex: 1, flexDirection: 'row' }}>
-					<View style={{ flex: 1, backgroundColor: 'yellow' }}></View>
+					<View style={{ flex: 1 }}></View>
 
 					<BoardNumbers line={line} position="top" boardArr={boardArr} />
 				</View>
@@ -340,7 +356,7 @@ const S = StyleSheet.create({
 	screen: {
 		flex: 1,
 	},
-	board: { backgroundColor: 'orange' },
+	board: {},
 	changeButton: {
 		// flex:1 ,
 		justifyContent: 'center',
@@ -356,3 +372,6 @@ const S = StyleSheet.create({
 		marginTop: 10,
 	},
 });
+function useUpdateAtom(touchBoardXY: any) {
+	throw new Error('Function not implemented.');
+}

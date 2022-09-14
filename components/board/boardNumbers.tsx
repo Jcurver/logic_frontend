@@ -11,6 +11,7 @@ const BoardNumbers = ({ line, position, boardArr }: IBoardNumbers) => {
 	const [topLineFinishArr, setTopLineFinishArr] = useAtom(TopLineFinish);
 
 
+
 	return (
 		<>
 			<View
@@ -27,13 +28,20 @@ const BoardNumbers = ({ line, position, boardArr }: IBoardNumbers) => {
 								? {
 										alignItems: 'center',
 										justifyContent: 'flex-end',
-										paddingBottom: 7,
+										// paddingBottom: 7,
+										backgroundColor: topLineFinishArr[nthLine]
+											? 'gray'
+											: '#dddddd',
 								  }
 								: {
 										alignItems: 'flex-end',
 										justifyContent: 'center',
-										paddingRight: 7,
+										// paddingRight: 7,
+										backgroundColor: leftLineFinishArr[nthLine]
+											? 'gray'
+											: '#dddddd',
 								  },
+
 							// topLineFinishArr[nthLine]
 							// 	? { backgroundColor: 'gray' }
 							// 	: { backgroundColor: '#dddddd' },

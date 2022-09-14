@@ -57,6 +57,46 @@ const getLineArr = (
 	return arrLine;
 };
 
+const lineString = (
+	line: number,
+	nthLine: number,
+	position: 'left' | 'top',
+	boardArr: TouchState[][]
+) => {
+	const [leftLineFinishArr, setLeftLineFinishArr] = useAtom(LeftLineFinish);
+	const [topLineFinishArr, setTopLineFinishArr] = useAtom(TopLineFinish);
+	const touchMode = useAtomValue(TouchModeAtom);
+	const answerBoardLine = getLineArr(
+		line,
+		nthLine,
+		position,
+		MOCK_ANSWER_BOARD
+	);
+
+	const answerArr = makeLineArr(line, answerBoardLine);
+
+	if (touchMode === 'black') {
+		const nowLine = getLineArr(line, nthLine, position, boardArr);
+		const nowArr = makeLineArr(line, nowLine);
+
+		// setIsArrSame(JSON.stringify(nowArr) === JSON.stringify(answerArr));
+		let isArrSame = JSON.stringify(nowArr) === JSON.stringify(answerArr);
+		if (position === 'top') {
+			topLineFinishArr.splice(nthLine, 1, isArrSame);
+			setTopLineFinishArr(topLineFinishArr);
+		}
+		if (position === 'left') {
+			leftLineFinishArr.splice(nthLine, 1, isArrSame);
+			setLeftLineFinishArr(leftLineFinishArr);
+		}
+	}
+	if (position === 'left') {
+		return answerArr.join(' ');
+	}
+	if (position === 'top') {
+		return answerArr.join('\n');
+	}
+};
 const BoardLine = ({
 	line,
 	nthLine,
@@ -67,52 +107,30 @@ const BoardLine = ({
 	const [topLineFinishArr, setTopLineFinishArr] = useAtom(TopLineFinish);
 	// const [isArrSame, setIsArrSame] = useState(false);
 
-	const lineString = (
-		line: number,
-		nthLine: number,
-		position: 'left' | 'top',
-		boardArr: TouchState[][]
-	) => {
-		const touchMode = useAtomValue(TouchModeAtom);
-		const answerBoardLine = getLineArr(
-			line,
-			nthLine,
-			position,
-			MOCK_ANSWER_BOARD
-		);
-
-		const answerArr = makeLineArr(line, answerBoardLine);
-
-		if (touchMode === 'black') {
-			const nowLine = getLineArr(line, nthLine, position, boardArr);
-			const nowArr = makeLineArr(line, nowLine);
-
-			// setIsArrSame(JSON.stringify(nowArr) === JSON.stringify(answerArr));
-			let isArrSame = JSON.stringify(nowArr) === JSON.stringify(answerArr);
-			if (position === 'top') {
-				setTopLineFinishArr((a) => {
-					a.splice(nthLine, 1, isArrSame);
-
-					return a;
-				});
-			}
-			if (position === 'left') {
-				leftLineFinishArr.splice(nthLine, 1, isArrSame);
-				setLeftLineFinishArr(leftLineFinishArr);
-			}
-		}
-		if (position === 'left') {
-			return answerArr.join(' ');
-		}
-		if (position === 'top') {
-			return answerArr.join('\n');
-		}
-	};
-
-	lineString(line, nthLine, position, boardArr);
+	const lineNumber = lineString(line, nthLine, position, boardArr);
 
 	return (
-		<View style={{ backgroundColor: 'yellow' }}>
+		<View
+			style={[
+				{
+					width: '100%',
+					height: '100%',
+				},
+				position === 'top'
+					? {
+							alignItems: 'center',
+							justifyContent: 'flex-end',
+							paddingBottom: 7,
+							backgroundColor: topLineFinishArr[nthLine] ? 'gray' : '#cccccc',
+					  }
+					: {
+							alignItems: 'flex-end',
+							justifyContent: 'center',
+							paddingRight: 7,
+							backgroundColor: leftLineFinishArr[nthLine] ? 'gray' : '#cccccc',
+					  },
+			]}
+		>
 			{position === 'top' ? (
 				<Text
 					style={[
@@ -120,7 +138,7 @@ const BoardLine = ({
 						topLineFinishArr[nthLine] ? { fontWeight: 'bold' } : null,
 					]}
 				>
-					{lineString(line, nthLine, position, boardArr)}
+					{lineNumber}
 				</Text>
 			) : null}
 			{position === 'left' ? (
@@ -130,7 +148,7 @@ const BoardLine = ({
 						leftLineFinishArr[nthLine] ? { fontWeight: 'bold' } : null,
 					]}
 				>
-					{lineString(line, nthLine, position, boardArr)}
+					{lineNumber}
 				</Text>
 			) : null}
 		</View>

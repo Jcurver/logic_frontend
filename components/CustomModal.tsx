@@ -61,7 +61,7 @@ const S = StyleSheet.create({
 	screen: {
 		flex: 1,
 	},
-	board: { backgroundColor: 'orange' },
+	board: {  },
 	changeButton: {
 		// flex:1 ,
 		justifyContent: 'center',
