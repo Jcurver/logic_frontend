@@ -1,11 +1,9 @@
 import React from 'react';
 import { View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { ITouchableArea } from './interface';
 
-interface ITouchableArea {
-	boardArr: string[][];
-	line: 10 | 15 | 20;
-}
+
 
 const TouchableArea = ({ boardArr, line }: ITouchableArea) => {
 	return (

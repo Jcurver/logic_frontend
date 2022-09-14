@@ -1,4 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from 'react';
 import {
 	View,
 	Text,
@@ -13,14 +19,15 @@ import {
 import { Background, useHeaderHeight } from '@react-navigation/elements';
 import Icon from 'react-native-vector-icons/Ionicons';
 import TouchableArea from './TouchableArea';
-import { TouchCase, TouchMode, TouchState } from './TouchCase';
+import { TouchMode, TouchState } from './interface';
+import { TouchCase } from './TouchCase';
 import { MOCK_BOARD } from './mockBoard';
-import { ClearModal } from './ClearModal';
+import { CustomModal } from '../CustomModal';
+import BoardNumbers from './boardNumbers';
+import { IBoard } from './interface';
 
-type Line = 10 | 15 | 20;
-interface IBoard {
-	line: Line;
-}
+const MOCK_BOARD1 = MOCK_BOARD.map((v) => [...v]);
+const MOCK_BOARD2 = MOCK_BOARD.map((v) => [...v]);
 
 export const Board = ({ line }: IBoard) => {
 	const windowWidth = Dimensions.get('window').width;
@@ -33,7 +40,12 @@ export const Board = ({ line }: IBoard) => {
 		x0: 0,
 		y0: 0,
 	});
+	const [touchFinal, setTouchFinal] = useState({ x: 0, y: 0 });
 	const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
+	const [savePointModalVisible, setSavePointModalVisible] =
+		useState<boolean>(false);
+	const [touched, setTouched] = useState(false);
+	const [savePointArr, setSavePointArr] = useState<TouchState[][]>();
 
 	let BoardTargetedX = 0;
 	let BoardTargetedY = 0;
@@ -42,16 +54,16 @@ export const Board = ({ line }: IBoard) => {
 		.fill('white')
 		.map(() => new Array(line).fill('white'));
 	const [boardArr, setBoardArr] = useState<TouchState[][]>(
-		MOCK_BOARD ? [...MOCK_BOARD] : clearArr
+		MOCK_BOARD1 ? MOCK_BOARD1 : clearArr
 	);
-	const BOARD = [...MOCK_BOARD];
+	console.log('boardArr:: ',boardArr)
 
 	const [boardArrStack, setBoardArrStack] = useState<TouchState[][][]>(
-		BOARD ? [[...BOARD]] : [clearArr]
+		MOCK_BOARD2 ? [MOCK_BOARD2] : [clearArr]
 	);
-	console.log('BoardArrStack ', boardArrStack);
+	// console.log('boardArrStack:: ', boardArrStack);
+	// console.log('boardArrStack:: ', boardArrStack.length);
 
-	const [stackNum, setStackNum] = useState<number>(1);
 	const [touchMode, setTouchMode] = useState<TouchMode>('black');
 
 	const changeButton = (touchMode: TouchMode) => {
@@ -63,16 +75,34 @@ export const Board = ({ line }: IBoard) => {
 	};
 	const clearBoard = () => {
 		setBoardArr(clearArr);
-		// setBoardArrStack([clearArr]);
-		setStackNum(1);
 		setDeleteModalVisible(false);
 	};
-	const moveStack = (dStack: number) => {
-		if (stackNum + dStack < 0 || stackNum + dStack > boardArrStack.length) {
+	const goBack = () => {
+		if (boardArrStack.length === 1) {
 			return;
 		}
-		setStackNum((num) => num + dStack);
-		// setBoardArr(boardArrStack[stackNum - 1]);
+		const stackCopy = boardArrStack.map((v) => [...v.map((i) => [...i])]);
+
+		setBoardArrStack(stackCopy.slice(0, stackCopy.length - 1));
+
+		setBoardArr(stackCopy[stackCopy.length - 2]);
+		setTouched(true);
+
+		// setBoardArr(boardArrStack[stackNum - 2]);
+	};
+	const savePoint = () => {
+		const boardArrCopy = boardArr.map((v) => [...v]);
+		const savePointArrCopy = savePointArr?.map((v) => [...v]);
+
+		if (savePointArrCopy) {
+			setBoardArr(savePointArrCopy);
+			setBoardArrStack([savePointArrCopy]);
+			setSavePointArr(undefined);
+		} else {
+			setSavePointArr(boardArrCopy);
+			setBoardArrStack([boardArrCopy]);
+		}
+		setSavePointModalVisible(false);
 	};
 
 	const boardTouch = (touchX: number, touchY: number, mode: TouchMode) => {
@@ -83,7 +113,7 @@ export const Board = ({ line }: IBoard) => {
 				1,
 				TouchCase(boardArr[touchY][touchX], mode)
 			);
-			return [...boardArr];
+			return boardArr;
 		});
 	};
 
@@ -108,6 +138,7 @@ export const Board = ({ line }: IBoard) => {
 						(panResponderStart.y0 + dy - boardStartYpx) /
 							(touchableBoardWidth / line)
 					);
+					setTouchFinal({ x: touchFinalX, y: touchFinalY });
 
 					if (
 						touchFinalX >= 0 &&
@@ -123,14 +154,15 @@ export const Board = ({ line }: IBoard) => {
 							for (let y = 0; y < line; y++) {
 								if (boardArr[y][x] === 'newBlack') {
 									boardArr[y].splice(x, 1, 'white');
-									setBoardArr([...boardArr]);
+									setBoardArr(boardArr);
 								}
 								if (boardArr[y][x] === 'newX') {
 									boardArr[y].splice(x, 1, 'white');
-									setBoardArr([...boardArr]);
+									setBoardArr(boardArr);
 								}
 							}
 						}
+						// console.log('sss:: ');
 						if (Math.abs(dx) > Math.abs(dy)) {
 							for (
 								let i = 0;
@@ -166,6 +198,7 @@ export const Board = ({ line }: IBoard) => {
 						y0 <= boardStartYpx + touchableBoardWidth &&
 						x0 >= boardStartXpx
 					) {
+						setPanResponderStart({ x0, y0 });
 						const touchY = Math.floor(
 							(y0 - boardStartYpx) / (touchableBoardWidth / line)
 						);
@@ -192,41 +225,38 @@ export const Board = ({ line }: IBoard) => {
 					} else {
 						setPanResponderStart({ x0: 0, y0: 0 });
 					}
-					// console.log('boardArrStack[0]:: ', boardArrStack[0]);
-					// console.log('boardArr:: ', boardArr);
-					// setBoardArrStack([...boardArrStack, [...boardArr]]);
 				},
 				onPanResponderRelease: () => {
-					for (let x = 0; x < line; x++) {
-						for (let y = 0; y < line; y++) {
-							if (boardArr[y][x] === 'newBlack') {
-								boardArr[y].splice(x, 1, 'oldBlack');
-								setBoardArr([...boardArr]);
-							}
-							if (boardArr[y][x] === 'newX') {
-								boardArr[y].splice(x, 1, 'oldX');
-								setBoardArr([...boardArr]);
-							}
-						}
-					}
-					if (touchMode === 'removeBlack') {
-						setTouchMode('black');
-					}
-					if (touchMode === 'removeX') {
-						setTouchMode('x');
-					}
-					const forSaveBoard = [...boardArr];
-					for (let x = 0; x < line; x++) {
-						for (let y = 0; y < line; y++) {
-							if (forSaveBoard[y][x] === 'newBlack') {
-								forSaveBoard[y].splice(x, 1, 'white');
+					if (
+						panResponderStart.y0 >= boardStartYpx &&
+						panResponderStart.y0 <= boardStartYpx + touchableBoardWidth &&
+						panResponderStart.x0 >= boardStartXpx
+					) {
+						for (let x = 0; x < line; x++) {
+							for (let y = 0; y < line; y++) {
+								if (boardArr[y][x] === 'newBlack') {
+									boardArr[y].splice(x, 1, 'oldBlack');
+									setBoardArr([...boardArr]);
+								}
+								if (boardArr[y][x] === 'newX') {
+									boardArr[y].splice(x, 1, 'oldX');
+									setBoardArr([...boardArr]);
+								}
 							}
 						}
-					}
-					// save('boardStack', [...boardArrStack,boardArr]);
-					// setBoardArrStack([...bo])
+						if (touchMode === 'removeBlack') {
+							setTouchMode('black');
+						}
+						if (touchMode === 'removeX') {
+							setTouchMode('x');
+						}
 
-					setStackNum((num) => num + 1);
+						const copy = boardArr.map((v) => [...v]);
+						const stackCopy = boardArrStack.map((v) => [
+							...v.map((i) => [...i]),
+						]);
+						setBoardArrStack([...stackCopy, copy]);
+					}
 				},
 			}),
 		[panResponderStart, touchMode]
@@ -236,15 +266,17 @@ export const Board = ({ line }: IBoard) => {
 		<View>
 			<View
 				{...panResponder.panHandlers}
+				// {...panResponder.panHandlers}
 				// useNativeDriver={true}
 				style={[{ width: windowWidth, height: windowWidth }, S.board]}
 			>
 				<View style={{ flex: 1, flexDirection: 'row' }}>
 					<View style={{ flex: 1, backgroundColor: 'yellow' }}></View>
-					<View style={{ flex: 3, backgroundColor: 'green' }}></View>
+
+					<BoardNumbers line={line} position="top" boardArr={boardArr} />
 				</View>
 				<View style={{ flex: 3, flexDirection: 'row' }}>
-					<View style={{ flex: 1, backgroundColor: 'blue' }}></View>
+					<BoardNumbers line={line} position="right" boardArr={boardArr} />
 					<TouchableArea boardArr={boardArr} line={line} />
 				</View>
 			</View>
@@ -264,17 +296,15 @@ export const Board = ({ line }: IBoard) => {
 						}
 					/>
 				</TouchableOpacity>
-				<TouchableOpacity onPress={() => moveStack(-1)}>
+				<TouchableOpacity onPress={() => goBack()}>
 					<Icon
 						name="return-up-back"
 						size={40}
-						color={boardArrStack.length === 1 ? 'gray' : 'black'}
+						color={boardArrStack.length <= 1 ? 'gray' : 'black'}
 					/>
 				</TouchableOpacity>
-				<TouchableOpacity onPress={() => moveStack(1)}>
-					<Icon name="return-up-forward" size={40} />
-				</TouchableOpacity>
-				<TouchableOpacity onPress={() => changeButton(touchMode)}>
+
+				<TouchableOpacity onPress={() => setSavePointModalVisible(true)}>
 					<Icon name="flag-outline" size={40} />
 				</TouchableOpacity>
 				<TouchableOpacity onPress={() => setDeleteModalVisible(true)}>
@@ -282,10 +312,21 @@ export const Board = ({ line }: IBoard) => {
 				</TouchableOpacity>
 			</View>
 
-			<ClearModal
+			<CustomModal
 				isVisible={deleteModalVisible}
-				setDeleteModalVisible={setDeleteModalVisible}
-				clearBoard={() => clearBoard()}
+				setVisible={setDeleteModalVisible}
+				submit={() => clearBoard()}
+				text="정말로 삭제하시겠어요?"
+			/>
+			<CustomModal
+				isVisible={savePointModalVisible}
+				setVisible={setSavePointModalVisible}
+				submit={() => savePoint()}
+				text={
+					savePointArr
+						? '세이브포인트로 돌아가시겠어요?'
+						: '세이브포인트로 설정하시겠어요?'
+				}
 			/>
 		</View>
 	);

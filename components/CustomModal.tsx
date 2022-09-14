@@ -1,17 +1,19 @@
 import React, { Dispatch, SetStateAction } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Modal from 'react-native-modal';
-interface IClearModal {
+interface ICustomModal {
 	isVisible: boolean;
-	setDeleteModalVisible: Dispatch<SetStateAction<boolean>>;
-	clearBoard: () => void;
+	setVisible: Dispatch<SetStateAction<boolean>>;
+	submit: () => void;
+	text: string;
 }
 
-export const ClearModal = ({
+export const CustomModal = ({
 	isVisible,
-	setDeleteModalVisible,
-	clearBoard,
-}: IClearModal) => {
+	setVisible,
+	submit,
+	text,
+}: ICustomModal) => {
 	return (
 		<Modal
 			isVisible={isVisible}
@@ -34,18 +36,18 @@ export const ClearModal = ({
 					padding: 20,
 				}}
 			>
-				<Text>정말로 삭제하시겠어요?</Text>
-				<Text>삭제 후에는 되돌릴 수 없어요!</Text>
+				<Text>{text}</Text>
+
 				<View style={{ flexDirection: 'row' }}>
 					<TouchableOpacity
 						style={S.deleteModalButton}
-						onPress={() => setDeleteModalVisible(false)}
+						onPress={() => setVisible(false)}
 					>
 						<Text>아니오</Text>
 					</TouchableOpacity>
 					<TouchableOpacity
 						style={S.deleteModalButton}
-						onPress={() => clearBoard()}
+						onPress={() => submit()}
 					>
 						<Text>네</Text>
 					</TouchableOpacity>

@@ -1,5 +1,5 @@
-export type TouchState = 'newBlack' | 'oldBlack' | 'newX' | 'oldX' | 'white';
-export type TouchMode = 'black' | 'x' | 'removeBlack' | 'removeX';
+import { TouchMode, TouchState } from "./interface";
+
 
 export const TouchCase = (touchState: TouchState, mode: TouchMode) => {
 	switch (mode) {
