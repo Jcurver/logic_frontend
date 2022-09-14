@@ -70,8 +70,6 @@ export const Board = ({ line }: IBoard) => {
 	const [leftLineFinishArr, setLeftLineFinishArr] = useAtom(LeftLineFinish);
 	const [topLineFinishArr, setTopLineFinishArr] = useAtom(TopLineFinish);
 
-
-
 	const changeButton = (touchMode: TouchMode) => {
 		if (touchMode === 'black' || touchMode === 'removeBlack') {
 			setTouchMode('x');
@@ -80,8 +78,9 @@ export const Board = ({ line }: IBoard) => {
 		}
 	};
 	const clearBoard = () => {
-		setBoardArr(clearArr);
+		setBoardArr([...clearArr.map((i) => [...i])]);
 		setDeleteModalVisible(false);
+		setTouchMode('black')
 	};
 	const goBack = () => {
 		if (boardArrStack.length === 1) {
@@ -243,26 +242,26 @@ export const Board = ({ line }: IBoard) => {
 							for (let y = 0; y < line; y++) {
 								if (boardArr[y][x] === 'newBlack') {
 									boardArr[y].splice(x, 1, 'oldBlack');
-									// setBoardArr(boardArr.map((v) => [...v]));
+									setBoardArr(boardArr.map((v) => [...v]));
 								}
 								if (boardArr[y][x] === 'newX') {
 									boardArr[y].splice(x, 1, 'oldX');
-									// setBoardArr(boardArr.map((v) => [...v]));
+									setBoardArr(boardArr.map((v) => [...v]));
 								}
 							}
 						}
-						if (touchMode === 'black') {
-							for (let x = 0; x < line; x++) {
-								if (leftLineFinishArr[x]) {
-									for (let y = 0; y < line; y++) {
-										if (boardArr[x][y] === 'white') {
-											boardArr[x].splice(y, 1, 'oldX');
-											setBoardArr(boardArr.map((v) => [...v]));
-										}
-									}
-								}
-							}
-						}
+						// if (touchMode === 'black') {
+						// 	for (let x = 0; x < line; x++) {
+						// 		if (leftLineFinishArr[x]) {
+						// 			for (let y = 0; y < line; y++) {
+						// 				if (boardArr[x][y] === 'white') {
+						// 					boardArr[x].splice(y, 1, 'oldX');
+						// 					setBoardArr(boardArr.map((v) => [...v]));
+						// 				}
+						// 			}
+						// 		}
+						// 	}
+						// }
 
 						if (touchMode === 'removeBlack') {
 							setTouchMode('black');
@@ -291,12 +290,38 @@ export const Board = ({ line }: IBoard) => {
 				style={[{ width: windowWidth, height: windowWidth }, S.board]}
 			>
 				<View style={{ flex: 1, flexDirection: 'row' }}>
-					<View style={{ flex: 1 }}></View>
+					<View style={{ flex: 1,justifyContent:'center',alignItems:'center' }}>
+						<TouchableOpacity onPress={() => changeButton(touchMode)}>
+							<Icon
+								name={
+									touchMode === 'black' || touchMode === 'removeBlack'
+										? 'brush'
+										: 'close'
+								}
+								size={66}
+								color={
+									touchMode === 'removeBlack' || touchMode === 'removeX'
+										? 'red'
+										: 'gray'
+								}
+							/>
+						</TouchableOpacity>
+					</View>
 
-					<BoardNumbers line={line} position="top" boardArr={boardArr} />
+					<BoardNumbers
+						line={line}
+						position="top"
+						boardArr={boardArr}
+						setBoardArr={setBoardArr}
+					/>
 				</View>
 				<View style={{ flex: 3, flexDirection: 'row' }}>
-					<BoardNumbers line={line} position="left" boardArr={boardArr} />
+					<BoardNumbers
+						line={line}
+						position="left"
+						boardArr={boardArr}
+						setBoardArr={setBoardArr}
+					/>
 					<TouchableArea boardArr={boardArr} line={line} />
 				</View>
 			</View>
@@ -325,10 +350,22 @@ export const Board = ({ line }: IBoard) => {
 				</TouchableOpacity>
 
 				<TouchableOpacity onPress={() => setSavePointModalVisible(true)}>
-					<Icon name="flag-outline" size={40} />
+					<Icon
+						name="flag-outline"
+						size={40}
+						color={savePointArr ? 'yellowgreen' : 'black'}
+					/>
 				</TouchableOpacity>
 				<TouchableOpacity onPress={() => setDeleteModalVisible(true)}>
-					<Icon name="trash-outline" size={40} />
+					<Icon
+						name="trash-outline"
+						size={40}
+						color={
+							JSON.stringify(boardArr) === JSON.stringify(clearArr)
+								? 'gray'
+								: 'black'
+						}
+					/>
 				</TouchableOpacity>
 			</View>
 

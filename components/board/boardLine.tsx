@@ -61,7 +61,8 @@ const lineString = (
 	line: number,
 	nthLine: number,
 	position: 'left' | 'top',
-	boardArr: TouchState[][]
+	boardArr: TouchState[][],
+	setBoardArr: React.Dispatch<React.SetStateAction<TouchState[][]>>
 ) => {
 	const [leftLineFinishArr, setLeftLineFinishArr] = useAtom(LeftLineFinish);
 	const [topLineFinishArr, setTopLineFinishArr] = useAtom(TopLineFinish);
@@ -89,6 +90,26 @@ const lineString = (
 			leftLineFinishArr.splice(nthLine, 1, isArrSame);
 			setLeftLineFinishArr(leftLineFinishArr);
 		}
+		// for (let x = 0; x < line; x++) {
+		// 	if (leftLineFinishArr[x]) {
+		// 		for (let y = 0; y < line; y++) {
+		// 			if (boardArr[x][y] === 'white') {
+		// 				boardArr[x].splice(y, 1, 'oldX');
+		// 				setBoardArr(boardArr.map((v) => [...v]));
+		// 			}
+		// 		}
+		// 	}
+		// }
+		// for (let x = 0; x < line; x++) {
+		// 	if (topLineFinishArr[x]) {
+		// 		for (let y = 0; y < line; y++) {
+		// 			if (boardArr[y][x] === 'white') {
+		// 				boardArr[y].splice(x, 1, 'oldX');
+		// 				setBoardArr(boardArr.map((v) => [...v]));
+		// 			}
+		// 		}
+		// 	}
+		// }
 	}
 	if (position === 'left') {
 		return answerArr.join(' ');
@@ -102,12 +123,13 @@ const BoardLine = ({
 	nthLine,
 	position,
 	boardArr,
+	setBoardArr,
 }: IBoardRightNumbersLine) => {
 	const [leftLineFinishArr, setLeftLineFinishArr] = useAtom(LeftLineFinish);
 	const [topLineFinishArr, setTopLineFinishArr] = useAtom(TopLineFinish);
 	// const [isArrSame, setIsArrSame] = useState(false);
 
-	const lineNumber = lineString(line, nthLine, position, boardArr);
+	const lineNumber = lineString(line, nthLine, position, boardArr,setBoardArr);
 
 	return (
 		<View

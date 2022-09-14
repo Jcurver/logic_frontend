@@ -3,8 +3,6 @@ import { View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { ITouchableArea } from './interface';
 
-
-
 const TouchableArea = ({ boardArr, line }: ITouchableArea) => {
 	return (
 		<View style={{ flex: 3 }}>

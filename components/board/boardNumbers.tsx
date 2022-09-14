@@ -6,11 +6,14 @@ import BoardLine from './boardLine';
 import { IBoardNumbers } from './interface';
 import { MOCK_BOARD } from './mockBoard';
 
-const BoardNumbers = ({ line, position, boardArr }: IBoardNumbers) => {
+const BoardNumbers = ({
+	line,
+	position,
+	boardArr,
+	setBoardArr,
+}: IBoardNumbers) => {
 	const [leftLineFinishArr, setLeftLineFinishArr] = useAtom(LeftLineFinish);
 	const [topLineFinishArr, setTopLineFinishArr] = useAtom(TopLineFinish);
-
-
 
 	return (
 		<>
@@ -55,6 +58,7 @@ const BoardNumbers = ({ line, position, boardArr }: IBoardNumbers) => {
 							nthLine={nthLine}
 							position={position}
 							boardArr={boardArr}
+							setBoardArr={setBoardArr}
 						/>
 					</View>
 				))}
@@ -69,6 +73,6 @@ const S = StyleSheet.create({
 	boardNumberLine: {
 		flex: 10,
 		borderWidth: 0.4,
-		backgroundColor:'#cccccc'
+		backgroundColor: '#cccccc',
 	},
 });

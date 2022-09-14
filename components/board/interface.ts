@@ -1,3 +1,4 @@
+import { SetStateAction } from 'react';
 type Line = 10 | 15 | 20;
 interface IBoard {
 	line: Line;
@@ -7,6 +8,7 @@ interface IBoardNumbers {
 	line: number;
   position: 'left' | 'top';
   boardArr:TouchState[][]
+  setBoardArr:  React.Dispatch<React.SetStateAction<TouchState[][]>>;
 }
 
 type TouchState = 'newBlack' | 'oldBlack' | 'newX' | 'oldX' | 'white';
