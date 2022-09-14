@@ -5,7 +5,7 @@ interface IBoard {
 
 interface IBoardNumbers {
 	line: number;
-  position: 'right' | 'top';
+  position: 'left' | 'top';
   boardArr:TouchState[][]
 }
 

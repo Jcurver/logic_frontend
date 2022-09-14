@@ -25,6 +25,9 @@ import { MOCK_BOARD } from './mockBoard';
 import { CustomModal } from '../CustomModal';
 import BoardNumbers from './boardNumbers';
 import { IBoard } from './interface';
+import { useAtom } from 'jotai';
+import { LeftLineFinish, TopLineFinish, TouchModeAtom } from '../../utils/Jotai';
+
 
 const MOCK_BOARD1 = MOCK_BOARD.map((v) => [...v]);
 const MOCK_BOARD2 = MOCK_BOARD.map((v) => [...v]);
@@ -56,15 +59,12 @@ export const Board = ({ line }: IBoard) => {
 	const [boardArr, setBoardArr] = useState<TouchState[][]>(
 		MOCK_BOARD1 ? MOCK_BOARD1 : clearArr
 	);
-	console.log('boardArr:: ',boardArr)
+	// console.log('boardArr:: ',boardArr)
 
 	const [boardArrStack, setBoardArrStack] = useState<TouchState[][][]>(
 		MOCK_BOARD2 ? [MOCK_BOARD2] : [clearArr]
 	);
-	// console.log('boardArrStack:: ', boardArrStack);
-	// console.log('boardArrStack:: ', boardArrStack.length);
-
-	const [touchMode, setTouchMode] = useState<TouchMode>('black');
+	const [touchMode,setTouchMode] = useAtom(TouchModeAtom)
 
 	const changeButton = (touchMode: TouchMode) => {
 		if (touchMode === 'black' || touchMode === 'removeBlack') {
@@ -90,6 +90,10 @@ export const Board = ({ line }: IBoard) => {
 
 		// setBoardArr(boardArrStack[stackNum - 2]);
 	};
+		const [leftLineFinishArr, setLeftLineFinishArr] = useAtom(LeftLineFinish);
+	const [topLineFinishArr, setTopLineFinishArr] = useAtom(TopLineFinish);
+	console.log(':: ', leftLineFinishArr, topLineFinishArr);
+	
 	const savePoint = () => {
 		const boardArrCopy = boardArr.map((v) => [...v]);
 		const savePointArrCopy = savePointArr?.map((v) => [...v]);
@@ -276,7 +280,7 @@ export const Board = ({ line }: IBoard) => {
 					<BoardNumbers line={line} position="top" boardArr={boardArr} />
 				</View>
 				<View style={{ flex: 3, flexDirection: 'row' }}>
-					<BoardNumbers line={line} position="right" boardArr={boardArr} />
+					<BoardNumbers line={line} position="left" boardArr={boardArr} />
 					<TouchableArea boardArr={boardArr} line={line} />
 				</View>
 			</View>
