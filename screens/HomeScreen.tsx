@@ -9,9 +9,12 @@ export const HomeScreen: FC<StackScreenProps<NavigatorParamList, 'home'>> = ({
 }) => {
 	return (
 		<View style={S.screen}>
-			<Text>asdfsadfasdf</Text>
+			<Text style={{ fontSize: 30 }}>Home</Text>
+			<TouchableOpacity onPress={() => navigate('logicPlay')}>
+				<Text style={{ fontSize: 30 }}>logic Play</Text>
+			</TouchableOpacity>
 			<TouchableOpacity onPress={() => navigate('uploadImage')}>
-				<Text>hiasdf</Text>
+				<Text style={{ fontSize: 30 }}>upload Image</Text>
 			</TouchableOpacity>
 		</View>
 	);

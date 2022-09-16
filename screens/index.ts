@@ -1,2 +1,3 @@
-export * from './home';
-export * from './uploadImage';
+export * from './HomeScreen';
+export * from './LogicPlayScreen';
+export * from './UploadImageScreen';

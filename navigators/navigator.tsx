@@ -13,7 +13,7 @@ import {
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import { HomeScreen, UploadImageScreen } from '../screens';
+import { HomeScreen, UploadImageScreen, LogicPlayScreen } from '../screens';
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -29,7 +29,8 @@ import { HomeScreen, UploadImageScreen } from '../screens';
  */
 export type NavigatorParamList = {
 	home: undefined;
-	uploadImage: undefined;
+	logicPlay: undefined;
+	uploadImage:undefined;
 	// 🔥 Your screens go here
 };
 
@@ -45,6 +46,7 @@ const AppStack = () => {
 			initialRouteName="home"
 		>
 			<Stack.Screen name="home" component={HomeScreen} />
+			<Stack.Screen name="logicPlay" component={LogicPlayScreen} />
 			<Stack.Screen name="uploadImage" component={UploadImageScreen} />
 		</Stack.Navigator>
 	);

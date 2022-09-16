@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>560953184700-9et1tsa2spaqf2ul476urmfv1bv8hurj.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.560953184700-9et1tsa2spaqf2ul476urmfv1bv8hurj</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDuIWwNZpHG5QzFwXTMBKMA7i93f7Zw2kw</string>
+	<key>GCM_SENDER_ID</key>
+	<string>560953184700</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>org.name.logicfrontend</string>
+	<key>PROJECT_ID</key>
+	<string>photologic-79984</string>
+	<key>STORAGE_BUCKET</key>
+	<string>photologic-79984.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:560953184700:ios:e96c7b430b3d8b5ebb9bb9</string>
+</dict>
+</plist>

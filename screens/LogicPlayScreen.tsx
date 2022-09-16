@@ -12,26 +12,12 @@ import ImagePicker from 'react-native-image-crop-picker';
 import { useLinkProps } from '@react-navigation/native';
 import { Board } from '../components';
 
-
-export const UploadImageScreen: FC<
-	StackScreenProps<NavigatorParamList, 'uploadImage'>
+export const LogicPlayScreen: FC<
+	StackScreenProps<NavigatorParamList, 'logicPlay'>
 > = () => {
-	const open = () => {
-		ImagePicker.openCamera({
-			width: 300,
-			height: 300,
-			cropping: true,
-		})
-			.then((image) => {
-				console.log('image::', image);
-			})
-			.catch((err) => console.log('err:: ', err));
-	};
 	return (
 		<View style={S.screen}>
-			<TouchableOpacity onPress={() => open()}>
-			</TouchableOpacity>
-				<Board line={10} />
+			<Board line={10} />
 		</View>
 	);
 };

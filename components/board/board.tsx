@@ -50,7 +50,6 @@ export const Board = ({ line }: IBoard) => {
 	const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
 	const [savePointModalVisible, setSavePointModalVisible] =
 		useState<boolean>(false);
-	const [touched, setTouched] = useState(false);
 	const [savePointArr, setSavePointArr] = useState<TouchState[][]>();
 
 	let BoardTargetedX = 0;
@@ -66,9 +65,9 @@ export const Board = ({ line }: IBoard) => {
 	const [boardArrStack, setBoardArrStack] = useState<TouchState[][][]>(
 		MOCK_BOARD2 ? [MOCK_BOARD2] : [clearArr]
 	);
+
+	console.log('boardArr:: ', boardArrStack);
 	const [touchMode, setTouchMode] = useAtom(TouchModeAtom);
-	const [leftLineFinishArr, setLeftLineFinishArr] = useAtom(LeftLineFinish);
-	const [topLineFinishArr, setTopLineFinishArr] = useAtom(TopLineFinish);
 
 	const changeButton = (touchMode: TouchMode) => {
 		if (touchMode === 'black' || touchMode === 'removeBlack') {
@@ -80,18 +79,18 @@ export const Board = ({ line }: IBoard) => {
 	const clearBoard = () => {
 		setBoardArr([...clearArr.map((i) => [...i])]);
 		setDeleteModalVisible(false);
-		setTouchMode('black')
+		setTouchMode('black');
 	};
 	const goBack = () => {
-		if (boardArrStack.length === 1) {
+		if (boardArrStack.length <= 1) {
+
 			return;
 		}
+
 		const stackCopy = boardArrStack.map((v) => [...v.map((i) => [...i])]);
-
-		setBoardArrStack(stackCopy.slice(0, stackCopy.length - 1));
-
-		setBoardArr(stackCopy[stackCopy.length - 2]);
-		setTouched(true);
+		stackCopy.pop();
+		setBoardArrStack(stackCopy);
+		setBoardArr(stackCopy[stackCopy.length - 1]);
 
 		// setBoardArr(boardArrStack[stackNum - 2]);
 	};
@@ -228,8 +227,10 @@ export const Board = ({ line }: IBoard) => {
 							boardTouch(touchX, touchY, 'removeX');
 							setTouchMode('removeX');
 						}
+						// setBoardArr([...boardArr]);
 					} else {
 						setPanResponderStart({ x0: 0, y0: 0 });
+						return;
 					}
 				},
 				onPanResponderRelease: () => {
@@ -242,14 +243,13 @@ export const Board = ({ line }: IBoard) => {
 							for (let y = 0; y < line; y++) {
 								if (boardArr[y][x] === 'newBlack') {
 									boardArr[y].splice(x, 1, 'oldBlack');
-									setBoardArr(boardArr.map((v) => [...v]));
 								}
 								if (boardArr[y][x] === 'newX') {
 									boardArr[y].splice(x, 1, 'oldX');
-									setBoardArr(boardArr.map((v) => [...v]));
 								}
 							}
 						}
+						setBoardArr(boardArr.map((v) => [...v]));
 						// if (touchMode === 'black') {
 						// 	for (let x = 0; x < line; x++) {
 						// 		if (leftLineFinishArr[x]) {
@@ -269,12 +269,19 @@ export const Board = ({ line }: IBoard) => {
 						if (touchMode === 'removeX') {
 							setTouchMode('x');
 						}
-
 						const boardArrCopy = boardArr.map((v) => [...v]);
 						const boardArrStackCopy = boardArrStack.map((v) => [
 							...v.map((i) => [...i]),
 						]);
-						setBoardArrStack([...boardArrStackCopy, boardArrCopy]);
+						if (
+							JSON.stringify(
+								boardArrStackCopy[boardArrStackCopy.length - 1]
+							) !== JSON.stringify(boardArrCopy)
+						) {
+							// setBoardArr(boardArrStackCopy[boardArrStackCopy.length - 1]);
+
+								setBoardArrStack([...boardArrStackCopy, boardArrCopy]);
+						}
 					}
 				},
 			}),
@@ -290,7 +297,9 @@ export const Board = ({ line }: IBoard) => {
 				style={[{ width: windowWidth, height: windowWidth }, S.board]}
 			>
 				<View style={{ flex: 1, flexDirection: 'row' }}>
-					<View style={{ flex: 1,justifyContent:'center',alignItems:'center' }}>
+					<View
+						style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+					>
 						<TouchableOpacity onPress={() => changeButton(touchMode)}>
 							<Icon
 								name={
